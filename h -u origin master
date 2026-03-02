@@ -1,0 +1,16 @@
+[33me498734[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m chore: add remaining config and env files
+[33m7eb009e[m[33m ([m[1;31morigin/master[m[33m)[m chore: add migrations and generated prisma client
+[33m2a29ee3[m app: setup express app with graceful shutdown
+[33m8f05413[m routes: wire up identify route with validation middleware
+[33md7b2645[m controller: add identify endpoint handler
+[33md0581d9[m service: implement identity reconciliation with 3 cases
+[33m2832a19[m service: add response builder for contact dto
+[33m1e493c6[m service: add pure helper functions for cluster logic
+[33mb2011b4[m repo: add contact repository with all db queries
+[33m40ec2d4[m middleware: add request validation with zod schema
+[33m5acf6f8[m middleware: add global error handler and AppError class
+[33mdf0f1f6[m types: add contact dto and response interfaces
+[33mf6007dd[m util: setup winston logger with pii redaction
+[33m5c4f37e[m config: add env validation using zod
+[33me12c1c7[m db: add contact model with linkPrecedence enum
+[33mbf1aaf4[m init: setup express typescript project
