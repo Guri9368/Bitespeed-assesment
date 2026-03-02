@@ -4,7 +4,7 @@ A backend service built for the Bitespeed backend task. It identifies and keeps 
 
 ## 🚀 Live Endpoint
 ```
-POST https://bitespeed-assessment.onrender.com/identify
+POST https://bitespeed-assesment-cq32.onrender.com/identify
 ```
 
 ## Tech Stack
@@ -167,4 +167,5 @@ npm install && ./node_modules/.bin/prisma generate && npm run build
 Start Command:
 ```
 ./node_modules/.bin/prisma migrate deploy && node dist/server.js
+
 ```
