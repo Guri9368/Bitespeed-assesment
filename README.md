@@ -1,50 +1,53 @@
 # Bitespeed Identity Reconciliation
 
-A backend service that identifies and tracks customer identity across multiple purchases by linking contacts with shared email or phone number.
+A backend service built for the Bitespeed backend task. It identifies and keeps track of a customer's identity across multiple purchases by linking contacts that share an email or phone number.
 
-## Live Endpoint
-
-POST https://your-app-name.onrender.com/identify
-
-> Replace with your actual Render URL after deployment
+## 🚀 Live Endpoint
+```
+POST https://bitespeed-assessment.onrender.com/identify
+```
 
 ## Tech Stack
 
-- Runtime: Node.js
-- Language: TypeScript
-- Framework: Express.js
-- Database: PostgreSQL
-- ORM: Prisma
-- Validation: Zod
+- **Runtime:** Node.js
+- **Language:** TypeScript
+- **Framework:** Express.js
+- **Database:** PostgreSQL
+- **ORM:** Prisma
+- **Validation:** Zod
 
 ## Project Structure
-
+```
 src/
-├── config/          # Environment and database setup
-├── controllers/     # Request handlers
-├── middlewares/     # Validation and error handling
-├── repositories/    # Database queries
-├── routes/          # API routes
-├── schemas/         # Zod validation schemas
-├── services/        # Business logic
-├── types/           # TypeScript interfaces
-└── utils/           # Logger utility
+├── config/          
+├── controllers/     
+├── middlewares/     
+├── repositories/    
+├── routes/          
+├── schemas/         
+├── services/        
+├── types/           
+└── utils/           
+```
 
-## API
+## API Reference
 
 ### POST /identify
 
-Accepts an email, phone number, or both and returns the consolidated contact identity.
+Receives a checkout event with email or phone number and returns the consolidated contact.
 
-Request Body:
+**Request Body** (JSON — not form-data)
+```json
 {
   "email": "lorraine@hillvalley.edu",
   "phoneNumber": "123456"
 }
+```
 
-At least one of email or phoneNumber must be provided.
+At least one of `email` or `phoneNumber` must be provided. Both can be sent together.
 
-Response:
+**Success Response — 200**
+```json
 {
   "contact": {
     "primaryContactId": 1,
@@ -53,39 +56,115 @@ Response:
     "secondaryContactIds": [23]
   }
 }
+```
+
+**Error Response — 400**
+```json
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "email",
+      "message": "At least one of email or phoneNumber is required"
+    }
+  ]
+}
+```
 
 ## How It Works
 
-Case 1 — No existing contact
-Creates a new primary contact and returns it.
+The service handles three reconciliation cases:
 
-Case 2 — Contact exists, new information
-Links the new email or phone as a secondary contact under the existing primary.
+**Case 1 — No existing contact**
+Both email and phone are unknown. Creates a new primary contact and returns it with empty secondaryContactIds.
 
-Case 3 — Two separate clusters linked
-Merges both clusters. The older contact stays primary, the newer one is demoted to secondary.
+**Case 2 — Matches one existing cluster**
+One field matches an existing contact but the other is new. Creates a secondary contact linked to the existing primary.
+
+**Case 3 — Matches two separate clusters**
+The request bridges two previously separate identities. Merges them — the older contact stays primary, the newer one is demoted to secondary. All secondaries are re-linked to the winner.
+
+## Example Scenarios
+
+**New customer — creates primary:**
+```json
+{ "email": "lorraine@hillvalley.edu", "phoneNumber": "123456" }
+```
+
+**Same phone, new email — creates secondary:**
+```json
+{ "email": "mcfly@hillvalley.edu", "phoneNumber": "123456" }
+```
+
+**Bridges two clusters — triggers merge:**
+```json
+{ "email": "george@hillvalley.edu", "phoneNumber": "717171" }
+```
+
+**Lookup by email only:**
+```json
+{ "email": "lorraine@hillvalley.edu" }
+```
+
+**Lookup by phone only:**
+```json
+{ "phoneNumber": "123456" }
+```
 
 ## Local Setup
 
-Prerequisites: Node.js 18+, PostgreSQL
+**Prerequisites**
+- Node.js 18+
+- PostgreSQL
 
+**Installation**
+```bash
+# Install dependencies
 npm install
+
+# Copy environment file
 cp .env.example .env
+```
 
-Update DATABASE_URL in .env:
-DATABASE_URL="postgresql://postgres:password@localhost:5432/bitespeed_db?schema=public"
-
+Update `DATABASE_URL` in `.env`:
+```
+DATABASE_URL="postgresql://postgres:yourpassword@localhost:5432/bitespeed_db?schema=public"
+```
+```bash
+# Generate Prisma client
 npx prisma generate
-npx prisma migrate dev
-npm run dev
 
-Server runs at http://localhost:3000
+# Run database migrations
+npx prisma migrate dev
+
+# Start development server
+npm run dev
+```
+
+Server runs at `http://localhost:3000`
 
 ## Environment Variables
 
-NODE_ENV              → development
-PORT                  → 3000
-API_VERSION           → v1
-DATABASE_URL          → required
-LOG_LEVEL             → info
-DB_TRANSACTION_TIMEOUT → 10000
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NODE_ENV` | Environment | `development` |
+| `PORT` | Server port | `3000` |
+| `API_VERSION` | API version | `v1` |
+| `DATABASE_URL` | PostgreSQL connection string | required |
+| `LOG_LEVEL` | Logging level | `info` |
+| `DB_TRANSACTION_TIMEOUT` | Max transaction time in ms | `10000` |
+
+## Deployment
+
+Hosted on **Render.com** with a managed PostgreSQL database.
+
+Build Command:
+```
+npm install && ./node_modules/.bin/prisma generate && npm run build
+```
+
+Start Command:
+```
+./node_modules/.bin/prisma migrate deploy && node dist/server.js
+```
